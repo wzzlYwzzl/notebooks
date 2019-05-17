@@ -37,7 +37,7 @@ batchY_placeholder = tf.placeholder(
 init_state = tf.placeholder(tf.float32, [batch_size, state_size])
 
 #为什么W的形状为(state_size+1, state_size),因为f(x,h)
-#W和b就是共享参数，里面的“+1”是因为每个输入用一个数字表示了，而不是用一个多维向量表示
+# W和b就是共享参数，里面的“+1”是因为每个输入用一个数字表示了，而不是用一个多维向量表示
 W = tf.Variable(np.random.rand(state_size + 1, state_size), dtype=tf.float32)
 b = tf.Variable(np.zeros((1, state_size)), dtype=tf.float32)
 
@@ -50,7 +50,7 @@ inputs_series = tf.unstack(batchX_placeholder, axis=1)
 labels_series = tf.unstack(batchY_placeholder, axis=1)
 
 current_state = init_state
-states_series = [] #保存中间的状态，用于back propagation
+states_series = []  # 保存中间的状态，用于back propagation
 for current_input in inputs_series:
     current_input = tf.reshape(current_input, [batch_size, 1])
     input_and_state_concatenated = tf.concat(
