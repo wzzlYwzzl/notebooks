@@ -81,4 +81,114 @@ sigmoid函数在[-2,2]之间的梯度变化接近线性。这就有效避免了�
 加入了Batch Normalization后的结构如下图：
 ![nn-batchnorm](./images/BatchNormalization/nn-with-batchnorm.png)
 
-Batch Normalization要和Mini-batch SGD结合使用。一次训练的样本假设包含m个训练实例，具体的BN操作作用于每个隐藏单元。每个隐藏单元的输入$\hat{x}^{k} = $
+Batch Normalization要和Mini-batch SGD结合使用。一次训练的样本假设包含m个训练实例，具体的BN操作作用于每个隐藏单元。每个隐藏单元的输入：
+$$\hat{x}^{(k)} = \frac{x^{(k)-E[x^{(k)}]}}{\sqrt{Var[x^{(k)}]}}$$
+其中：$x^{(k)}$是t-1层第k个神经元输出到t层某个神经元的输入。
+
+接下来，又对$\hat{x}^{(k)}$进行如下操作：
+$$y^{(k)} = \gamma^{(k)}\hat{x}^{(k)}+\beta^{(k)}$$
+
+整个计算过程如下图所示：
+![bn-caculate](./images/BatchNormalization/batchnorm-train.png)
+
+### 2.5 在推理过程中，Batch Normalization是如何处理的呢？
+
+在推理或者预测阶段，输入时一个，不存在均值和方差，那么如何使用Batch Normalization的逻辑呢？
+
+计算算法如下：
+![](./images/BatchNormalization/batchnorm-inference.png)
+
+### 2.6 Tensorflow相关代码
+
+```python
+def batch_norm(inputs,
+               decay=0.999,
+               center=True,
+               scale=False,
+               epsilon=0.001,
+               activation_fn=None,
+               param_initializers=None,
+               param_regularizers=None,
+               updates_collections=ops.GraphKeys.UPDATE_OPS,
+               is_training=True,
+               reuse=None,
+               variables_collections=None,
+               outputs_collections=None,
+               trainable=True,
+               batch_weights=None,
+               fused=None,
+               data_format=DATA_FORMAT_NHWC,
+               zero_debias_moving_mean=False,
+               scope=None,
+               renorm=False,
+               renorm_clipping=None,
+               renorm_decay=0.99,
+               adjustment=None):
+    pass
+    """
+    有关参数的说明：
+    inputs:
+    a tensor with 2 or more dimentions, where the first dimention has `batch_size`.
+
+    decay:
+    代表加权指数平均值的衰减速度，是使用了一种叫做加权指数衰减的方法更新均值和方差。值太小会导致均值方差更新太快，而值太大又会导致几乎没有衰减，容易出现过拟合。
+
+    center：
+    if True, add offset of `beta` to normalization tensor. If False, `beta` is ignored.
+
+    scale:
+    是否使用`gamma`对BN后面的值进行放大。
+
+    epsilon：
+    为了避免分布为0，给分母加上一个极小的值。
+
+    activation_fn:
+    激活函数，默认为None，即使用线性激活函数。
+
+    param_initializers:
+    可选的beta、gamma、moving mean、moving variance初始化参数。
+
+    param_regularizers:
+    可选的beta和gamma的正则化项
+
+    updates_collections:
+    其变量默认是tf.GraphKeys.UPDATE_OPS，在训练时提供了一种内置的均值和方差更新机制，即通过图中的tf.Graphs.UPDATE_OPS变量来更新，但它是在每次当前批次训练完成后才更新均值和方差，这样就导致当前数据总是使用前一次的均值和方差，没有得到最新的更新。所以一般都会将其设置为None，让均值和方差即时更新。这样虽然相比默认值在性能上稍慢点，但是对模型的训练还是有很大帮助的。
+
+    is_training:
+    True表示是训练过程，这时会不断更新样本集的均值和方差。当测试时，设置为False，这样就会使用训练样本的均值和方差。
+
+    reuse:
+    这一层的变量是否需要reused。
+
+    variales_collections:
+    Optional collections for the variables.
+
+    outputs_collections:
+    Collections to add the outputs.
+
+    trainable:
+    True, will add variables to graph collections `GraphKeys.TRAINABLE_VARIABLES`
+
+    batch_weights:
+    an optional tensor of shape `[batch_size]`, containing a frequenccy weight
+    for each batch item.
+
+    used:
+    used: Use nn.fused_batch_norm if True, otherwise
+    nn.batch_normalization
+
+    data_format: A string. `NHWC` default, `NCHW` are supported.
+    `NHWC`: [batch, height, width, channels]
+    `NCHW`：[batch, channels, height, width]
+    关于两种format的说明：https://mp.weixin.qq.com/s/I4Q1Bv7yecqYXUra49o7tw
+    """
+```
+
+## 3. Batch Normalization有关的问题
+
+### 3.1 BN有哪些好处？
+
+1. 提高训练速度，收敛速度加快；
+2. 增加分类效果，类似于Dropout，起到防止过拟合的作用；
+3. 调节参数时，对初始化参数要求没那么高了；
+4. 可以使用大的learning_rate;
