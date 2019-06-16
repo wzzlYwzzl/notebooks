@@ -9,4 +9,6 @@
 
 ## 2. Maxout基础知识
 
+这个思想或者说算法是2013年ICML上的一篇文献《Maxout Networks》提到的。Maxout是神经网络中的一层，类似于池化层、卷积层，Maxout可以看作是网络的激活层。
+
 ## 3. Maxout相关问题
