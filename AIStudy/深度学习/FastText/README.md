@@ -2,6 +2,10 @@
 
 # FastText
 
+## 官方文档
+
+[Python文档](https://github.com/facebookresearch/fastText/tree/master/python)
+
 ## 参考
 
 1. [fastText原理及实践](https://zhuanlan.zhihu.com/p/32965521)

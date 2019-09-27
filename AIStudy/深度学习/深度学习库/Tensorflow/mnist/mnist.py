@@ -15,6 +15,7 @@ def load_data(path='mnist.npz'):
     return (x_train, y_train), (x_test, y_test)
 
 #这个加载数据的方法是目前最新的tensorflow支持的方式
+#keras.datasets.mnist.load_data()
 (x_train, y_train), (x_test, y_test) = load_data()
 x_train = x_train / 255.0
 x_test = x_test / 255.0

@@ -72,3 +72,5 @@ $$ERR = \sum_{r=1}^n\frac{1}{r}\prod_{i=1}^{r-1}(1-R_i)R_r$$
 1. [Learning to rank简介](https://www.cnblogs.com/kemaswill/archive/2013/06/01/3109497.html)
 2. [ranking SVM](https://www.cnblogs.com/kemaswill/p/3241963.html)
 3. [深入浅出排序学习：写给程序员的算法系统开发实践](https://tech.meituan.com/2018/12/20/head-in-l2r.html)
+4. [How is search different than other machine learning problems?](https://opensourceconnections.com/blog/2017/08/03/search-as-machine-learning-prob/)
+5. [What is Learning To Rank?](https://opensourceconnections.com/blog/2017/02/24/what-is-learning-to-rank/)
