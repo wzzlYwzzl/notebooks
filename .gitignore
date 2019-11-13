@@ -3,3 +3,14 @@
 
 #.zip文件是数据文件，由于文件比较大，不再上传
 **/**.zip
+
+# python有关
+__pycache__/
+*.py[cod]
+*$py.class
+
+# macos系统有关
+
+.DS_Store
+.AppleDouble
+.LSOverride

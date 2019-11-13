@@ -33,7 +33,7 @@ service_urls = ['translate.google.cn']
 #f = open(test_file,encoding='utf-8')
 #lines = f.readlines()
 for i in range(1000):
-    line = "中华人民共和国"
+    line = "本文版权归属道琼斯公司所有，未经许可不得翻译和转载"
     if len(line) <= 1:
         continue
     try:
@@ -48,7 +48,7 @@ for i in range(1000):
         proxy_str = 'http://' + ip_port[0] + ':' + str(ip_port[1])
         print(proxy_str)
         proxy = {'https': proxy_str}
-        translator = Translator(service_urls=service_urls,proxies=proxy,timeout=10)
+        translator = Translator(service_urls=service_urls, proxies=proxy, timeout=10)
         #text = '今日涨停的股票'
         res = translator.translate(line, dest='en', src='zh-cn')
         print(res.text + str(i))
