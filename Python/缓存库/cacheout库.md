@@ -16,7 +16,7 @@ A caching library for Python.
 6. 批量的设置、获取、删除操作；
 7. 线程安全；
 8. 多种缓存机制：
-   FIFO（现金先出）
+   FIFO（现进先出）
    LIFO（后进先出）
    LRU（最近最少使用）
    MRU（最近最多使用）
