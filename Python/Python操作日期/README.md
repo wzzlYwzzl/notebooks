@@ -49,11 +49,15 @@ time.strftime(format[,t])
 
 time模块和calendar模块都是用来获取基础时间信息，并对展示形式做简单的处理。如果要进行日期的计算，需要使用datetime模块。
 
+在datetime模块中有timedelta类，这个类的对象用于表示一个时间间隔。
+
 不过datetime功能还是有点鸡肋，所以使用dateutil包。
 
-[datetime参考t](https://www.cnblogs.com/awakenedy/articles/9182036.html)
+[datetime参考](https://www.cnblogs.com/awakenedy/articles/9182036.html)
 
 ## 4. dateutil
+
+如果需要在时间上做运算，那么使用这个模块的增强版relativedelta功能会更强。
 
 安装：pip install python-dateutil
 
