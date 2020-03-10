@@ -114,3 +114,9 @@ class Dict:
                 # 998错误则意味需要重新加载主页获取新的token
             return json
         return None
+    
+dic = Dict()
+
+json = dic.dictionary('like a hot knife through butter')
+
+print(json)
