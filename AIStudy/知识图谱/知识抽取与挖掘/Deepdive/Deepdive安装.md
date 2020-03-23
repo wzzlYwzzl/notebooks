@@ -1,6 +1,8 @@
-# Deepdive
+[TOC]
 
-## 相关资源
+# Deepdive安装
+
+## 参考
 
 1. [Deepdive介绍与安装](https://zhuanlan.zhihu.com/p/43143014)
 2. [DeepDive-入门到跑路文档教程](https://github.com/theDoctor2013/DeepDive-tutorial)
