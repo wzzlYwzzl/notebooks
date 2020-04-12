@@ -1,3 +1,5 @@
+[TOC]
+
 # Java对象序列化
 
 ## 序列化与反序列化
@@ -28,7 +30,7 @@ java.io.ObjectInputStream
 
 ```java
 /*
- Serializable接口的定义，是个空接口
+ Serializable接口的定义，是个空接口，可以理解为开关，由写程序的人控制哪个对象允许序列化。
 */
 public interface Serializable{}
 
