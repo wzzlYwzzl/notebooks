@@ -31,10 +31,10 @@ public class DoubleArrayTrie {
 	private final static int UNIT_SIZE = 8; // size of int + int
 
 	private static class Node {
-		int code;
-		int depth;
-		int left;
-		int right;
+		int code; //节点字符的编码
+		int depth; //代表节点所在树的深度。root.depth = 0
+		int left; //代表节点的子节点在字典中范围的左边界
+		int right; //代表节点的子节点在字典中范围的右边界
 	};
 
 	private int check[];
@@ -50,11 +50,15 @@ public class DoubleArrayTrie {
 	private int progress;
 	private int nextCheckPos;
 	// boolean no_delete_;
-	int error_;
+	int error_; //错误码，如果程序运行过程中出错，就设置相应的错误码
 
 	// int (*progressfunc_) (size_t, size_t);
 
-	// inline _resize expanded
+	/**
+	 * 很直白的逻辑，就是扩大base、check数组的大小，同时将原来的数据copy进去。
+	 * @param newSize
+	 * @return
+	 */
 	private int resize(int newSize) {
 		int[] base2 = new int[newSize];
 		int[] check2 = new int[newSize];
@@ -118,8 +122,7 @@ public class DoubleArrayTrie {
 			return 0;
 
 		int begin = 0;
-		int pos = ((siblings.get(0).code + 1 > nextCheckPos) ? siblings.get(0).code + 1
-				: nextCheckPos) - 1;
+		int pos = ((siblings.get(0).code + 1 > nextCheckPos) ? siblings.get(0).code + 1 : nextCheckPos) - 1;
 		int nonzero_num = 0;
 		int first = 0;
 
@@ -143,8 +146,7 @@ public class DoubleArrayTrie {
 			begin = pos - siblings.get(0).code;
 			if (allocSize <= (begin + siblings.get(siblings.size() - 1).code)) {
 				// progress can be zero
-				double l = (1.05 > 1.0 * keySize / (progress + 1)) ? 1.05 : 1.0
-						* keySize / (progress + 1);
+				double l = (1.05 > 1.0 * keySize / (progress + 1)) ? 1.05 : 1.0 * keySize / (progress + 1);
 				resize((int) (allocSize * l));
 			}
 
@@ -178,8 +180,8 @@ public class DoubleArrayTrie {
 			List<Node> new_siblings = new ArrayList<Node>();
 
 			if (fetch(siblings.get(i), new_siblings) == 0) {
-				base[begin + siblings.get(i).code] = (value != null) ? (-value[siblings
-						.get(i).left] - 1) : (-siblings.get(i).left - 1);
+				base[begin + siblings.get(i).code] = (value != null) ? (-value[siblings.get(i).left] - 1)
+						: (-siblings.get(i).left - 1);
 
 				if (value != null && (-value[siblings.get(i).left] - 1) >= 0) {
 					error_ = -2;
@@ -250,8 +252,7 @@ public class DoubleArrayTrie {
 		return build(key, null, null, key.size());
 	}
 
-	public int build(List<String> _key, int _length[], int _value[],
-			int _keySize) {
+	public int build(List<String> _key, int _length[], int _value[], int _keySize) {
 		if (_keySize > _key.size() || _key == null)
 			return 0;
 
@@ -264,7 +265,7 @@ public class DoubleArrayTrie {
 
 		resize(65536 * 32);
 
-		base[0] = 1;
+		base[0] = 1; //初始base
 		nextCheckPos = 0;
 
 		Node root_node = new Node();
@@ -293,8 +294,7 @@ public class DoubleArrayTrie {
 
 		DataInputStream is = null;
 		try {
-			is = new DataInputStream(new BufferedInputStream(
-					new FileInputStream(file), BUF_SIZE));
+			is = new DataInputStream(new BufferedInputStream(new FileInputStream(file), BUF_SIZE));
 			for (int i = 0; i < size; i++) {
 				base[i] = is.readInt();
 				check[i] = is.readInt();
@@ -308,8 +308,7 @@ public class DoubleArrayTrie {
 	public void save(String fileName) throws IOException {
 		DataOutputStream out = null;
 		try {
-			out = new DataOutputStream(new BufferedOutputStream(
-					new FileOutputStream(fileName)));
+			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
 			for (int i = 0; i < size; i++) {
 				out.writeInt(base[i]);
 				out.writeInt(check[i]);
@@ -358,8 +357,7 @@ public class DoubleArrayTrie {
 		return commonPrefixSearch(key, 0, 0, 0);
 	}
 
-	public List<Integer> commonPrefixSearch(String key, int pos, int len,
-			int nodePos) {
+	public List<Integer> commonPrefixSearch(String key, int pos, int len, int nodePos) {
 		if (len <= 0)
 			len = key.length();
 		if (nodePos <= 0)
@@ -401,8 +399,7 @@ public class DoubleArrayTrie {
 	// debug
 	public void dump() {
 		for (int i = 0; i < size; i++) {
-			System.err.println("i: " + i + " [" + base[i] + ", " + check[i]
-					+ "]");
+			System.err.println("i: " + i + " [" + base[i] + ", " + check[i] + "]");
 		}
 	}
 }
