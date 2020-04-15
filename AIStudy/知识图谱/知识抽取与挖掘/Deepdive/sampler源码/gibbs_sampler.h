@@ -68,6 +68,7 @@ class GibbsSamplerThread {
   unsigned short p_rand_seed[3];
 
   // potential for each proposals for categorical
+  // 分类的每一项的可能性
   std::vector<double> varlen_potential_buffer_;
 
   // references and cached flags
@@ -215,21 +216,19 @@ inline size_t GibbsSamplerThread::draw_sample(const Variable &variable,
     }
 
     case DTYPE_CATEGORICAL: {
-      varlen_potential_buffer_.reserve(variable.cardinality);
+      varlen_potential_buffer_.reserve(variable.cardinality); //用reserve是不是有问题，应该用resize？
       double sum = -100000.0;
       proposal = Variable::INVALID_VALUE;
 // calculate potential for each proposal given a way to iterate the domain
 #define COMPUTE_PROPOSAL(EACH_DOMAIN_VALUE, DOMAIN_VALUE, DOMAIN_INDEX)       \
   do {                                                                        \
-          for                                                                 \
-      EACH_DOMAIN_VALUE {                                                     \
+          for EACH_DOMAIN_VALUE {                                             \
         varlen_potential_buffer_[DOMAIN_INDEX] =                              \
             fg.potential(variable, DOMAIN_VALUE, assignments, weight_values); \
         sum = logadd(sum, varlen_potential_buffer_[DOMAIN_INDEX]);            \
       }                                                                       \
     double r = erand48(p_rand_seed);                                          \
-        for                                                                   \
-      EACH_DOMAIN_VALUE {                                                     \
+        for EACH_DOMAIN_VALUE {                                               \
         r -= exp(varlen_potential_buffer_[DOMAIN_INDEX] - sum);               \
         if (r <= 0) {                                                         \
           proposal = DOMAIN_VALUE;                                            \

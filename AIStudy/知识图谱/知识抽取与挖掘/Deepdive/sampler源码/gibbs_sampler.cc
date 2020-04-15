@@ -1,6 +1,7 @@
 #include "gibbs_sampler.h"
 
-namespace dd {
+namespace dd
+{
 
 GibbsSampler::GibbsSampler(std::unique_ptr<FactorGraph> _pfg,
                            const Weight weights[], const NumaNodes &numa_nodes,
@@ -11,29 +12,36 @@ GibbsSampler::GibbsSampler(std::unique_ptr<FactorGraph> _pfg,
       fg(*pfg),
       infrs(*pinfrs),
       nthread(nthread),
-      nodeid(nodeid) {
+      nodeid(nodeid)
+{
   assert(nthread > 0);
   for (size_t i = 0; i < nthread; ++i)
     workers.push_back(GibbsSamplerThread(fg, infrs, i, nthread, opts));
 }
 
-void GibbsSampler::sample(size_t i_epoch) {
+void GibbsSampler::sample(size_t i_epoch)
+{
   numa_nodes_.bind();
-  for (auto &worker : workers) {
+  for (auto &worker : workers)
+  {
     threads.push_back(std::thread([&worker]() { worker.sample(); }));
   }
 }
 
-void GibbsSampler::sample_sgd(double stepsize) {
+void GibbsSampler::sample_sgd(double stepsize)
+{
   numa_nodes_.bind();
-  for (auto &worker : workers) {
+  for (auto &worker : workers)
+  {
     threads.push_back(
         std::thread([&worker, stepsize]() { worker.sample_sgd(stepsize); }));
   }
 }
 
-void GibbsSampler::wait() {
-  for (auto &t : threads) t.join();
+void GibbsSampler::wait()
+{
+  for (auto &t : threads)
+    t.join();
   threads.clear();
 }
 
@@ -45,7 +53,8 @@ GibbsSamplerThread::GibbsSamplerThread(FactorGraph &fg, InferenceResult &infrs,
       infrs(infrs),
       sample_evidence(opts.should_sample_evidence),
       learn_non_evidence(opts.should_learn_non_evidence),
-      is_noise_aware(opts.is_noise_aware) {
+      is_noise_aware(opts.is_noise_aware)
+{
   set_random_seed(rand(), rand(), rand());
   size_t nvar = fg.size.num_variables;
   // calculates the start and end id in this partition
@@ -56,22 +65,28 @@ GibbsSamplerThread::GibbsSamplerThread(FactorGraph &fg, InferenceResult &infrs,
 
 void GibbsSamplerThread::set_random_seed(unsigned short seed0,
                                          unsigned short seed1,
-                                         unsigned short seed2) {
+                                         unsigned short seed2)
+{
   p_rand_seed[0] = seed0;
   p_rand_seed[1] = seed1;
   p_rand_seed[2] = seed2;
 }
 
-void GibbsSamplerThread::sample() {
-  for (size_t vid = start; vid < end; ++vid) {
+void GibbsSamplerThread::sample()
+{
+  for (size_t vid = start; vid < end; ++vid)
+  {
     sample_single_variable(vid);
   }
 }
 
-void GibbsSamplerThread::sample_sgd(double stepsize) {
-  for (size_t vid = start; vid < end; ++vid) {
+void GibbsSamplerThread::sample_sgd(double stepsize)
+{
+  for (size_t vid = start; vid < end; ++vid)
+  {
+    //每次更新一个变量
     sample_sgd_single_variable(vid, stepsize);
   }
 }
 
-}  // namespace dd
+} // namespace dd

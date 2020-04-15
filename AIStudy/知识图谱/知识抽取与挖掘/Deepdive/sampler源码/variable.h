@@ -122,13 +122,16 @@ class Variable {
 
 class VariableToFactor {
  public:
-  // original (sparse) value as assigned by DD grounding
+  // original (sparse) value as assigned by DeepDive grounding
   size_t value;
+  
   // soft evidence weight. range: [0, 1].
-  // NOTE: for categorical only
+  // NOTE: for categorical only，只对分类变量使用
   double truthiness;
+  
   // base offset into the factor index (FactorGraph.factor_index)
   size_t factor_index_base;
+  
   // number of entries in the factor index
   size_t factor_index_length;
 

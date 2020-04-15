@@ -40,42 +40,20 @@ int gibbs(const CmdParser &args) {
   // number of max threads per NUMA node
   size_t n_thread_per_numa = (sysconf(_SC_NPROCESSORS_CONF)) / (n_numa_node);
 
-  if (!args.should_be_quiet) {
-    std::cout << std::endl;
-    std::cout << "#################MACHINE CONFIG#################"
-              << std::endl;
-    std::cout << "# # NUMA Node        : " << n_numa_node << std::endl;
-    std::cout << "# # Thread/NUMA Node : " << n_thread_per_numa << std::endl;
-    std::cout << "################################################"
-              << std::endl;
-    std::cout << std::endl;
-    std::cout << args << std::endl;
-  }
-
   FactorGraphDescriptor meta = read_meta(args.fg_file);
-  std::cout << "Factor graph to load:\t" << meta << std::endl;
 
   // Allocate the input on the first group of NUMA nodes
   NumaNodes::partition(0, args.n_datacopy).bind();
 
   // Load factor graph
-  std::cout << "\tinitializing factor graph..." << std::endl;
   FactorGraph *fg = new FactorGraph(meta);
 
-  std::cout << "\tloading factor graph..." << std::endl;
   fg->load_variables(args.variable_file);
   fg->load_weights(args.weight_file);
   fg->load_domains(args.domain_file);
   fg->load_factors(args.factor_file);
-  std::cout << "Factor graph loaded:\t" << fg->size << std::endl;
   fg->safety_check();
   fg->construct_index();
-  std::cout << "Factor graph indexed:\t" << fg->size << std::endl;
-
-  if (!args.should_be_quiet) {
-    std::cout << "Printing FactorGraph statistics:" << std::endl;
-    std::cout << *fg << std::endl;
-  }
 
   // Initialize Gibbs sampling application.
   DimmWitted dw(fg, fg->weights.get(), args);
@@ -111,7 +89,7 @@ DimmWitted::DimmWitted(FactorGraph *p_cfg, const Weight weights[],
                    // use the given factor graph for the first sampler
                 p_cfg
                    :
-                   // then, make a copy for the rest
+                   // then, make a copy for the rest，剩下的都是copy factor graph
                 new FactorGraph(samplers[0].fg)),
         weights, numa_nodes, n_thread_per_numa, i, opts));
     ++i;
@@ -160,6 +138,7 @@ void DimmWitted::inference() {
 }
 
 void DimmWitted::learn() {
+  //第一个sampler保存最终的结果
   InferenceResult &infrs = samplers[0].infrs;
 
   const size_t n_epoch = compute_n_epochs(opts.n_learning_epoch);
@@ -177,20 +156,12 @@ void DimmWitted::learn() {
 
   // learning epochs
   for (size_t i_epoch = 0; !stop && i_epoch < n_epoch; ++i_epoch) {
-    if (should_show_progress) {
-      std::streamsize ss = std::cout.precision();
-      std::cout << std::setprecision(3) << "LEARNING EPOCH "
-                << i_epoch * n_samplers_ << "~"
-                << ((i_epoch + 1) * n_samplers_ - 1) << "...." << std::flush
-                << std::setprecision(ss);
-    }
-
     t.restart();
 
     // performs stochastic gradient descent with sampling
     for (auto &sampler : samplers) sampler.sample_sgd(current_stepsize);
 
-    // wait the samplers to finish
+    // wait the samplers to finish，线程等待
     for (auto &sampler : samplers) sampler.wait();
 
     stop = update_weights(infrs, t.elapsed(), current_stepsize, prev_weights);
@@ -199,43 +170,36 @@ void DimmWitted::learn() {
     for (size_t i = 1; i < n_samplers_; ++i)
       infrs.copy_weights_to(samplers[i].infrs);
 
-    current_stepsize *= decay;
+    current_stepsize *= decay; //stepsize按照指定的衰退比例衰减
   }
-
-  double elapsed = t_total.elapsed();
-  std::cout << "TOTAL LEARNING TIME: " << elapsed << " sec." << std::endl;
 }
 
-bool DimmWitted::update_weights(InferenceResult &infrs, double elapsed,
+//更新权重，多个sampler相加，取平均得到新的weight
+bool DimmWitted::update_weights(InferenceResult &infrs,
+                                double elapsed,
                                 double stepsize,
                                 const std::unique_ptr<double[]> &prev_weights) {
   // sum the weights and store in the first factor graph
   // the average weights will be calculated
   for (size_t i = 1; i < n_samplers_; ++i)
+    //把其他sampler的权重都加到infrs上
     infrs.merge_weights_from(samplers[i].infrs);
+  //权重求平均
   if (n_samplers_ > 1) infrs.average_weights(n_samplers_);
 
   // calculate the norms of the difference of weights from the current epoch
-  // and last epoch
+  // and last epoch，这一段代码很奇怪，计算了半天，经没有实际的外部影响
   double lmax = -INFINITY;
   double l2 = 0.0;
   for (size_t j = 0; j < infrs.nweights; ++j) {
     double diff = fabs(infrs.weight_values[j] - prev_weights[j]);
     l2 += diff * diff;
-    if (lmax < diff) lmax = diff;
+    
+    if (lmax < diff) lmax = diff; //找到diff的最大值
   }
   lmax /= stepsize;
 
-  if (!opts.should_be_quiet) {
-    std::streamsize ss = std::cout.precision();
-    std::cout << std::setprecision(3) << "" << elapsed << " sec."
-              << "," << (infrs.nvars * n_samplers_) / elapsed << " vars/sec."
-              << ",stepsize=" << stepsize << ",lmax=" << lmax
-              << ",l2=" << sqrt(l2) / stepsize << std::endl
-              << std::setprecision(ss);
-  }
-
-  // update prev_weights
+  // update prev_weights，将最新的weight赋值给pre_weights
   COPY_ARRAY(infrs.weight_values.get(), infrs.nweights, prev_weights.get());
 
   // TODO: early stopping based on convergence
@@ -268,7 +232,6 @@ void DimmWitted::aggregate_results_and_dump() {
 
   // dump inference results
   std::string filename_text(opts.output_folder + "/inference_result.out.text");
-  std::cout << "DUMPING... TEXT    : " << filename_text << std::endl;
   std::ofstream fout_text(filename_text);
   infrs.dump_marginals_in_text(fout_text);
   fout_text.close();
@@ -277,6 +240,7 @@ void DimmWitted::aggregate_results_and_dump() {
 }
 
 // compute number of NUMA-aware epochs for learning or inference
+// 指定的epoch被分配给多个sampler
 size_t DimmWitted::compute_n_epochs(size_t n_epoch) {
   return std::ceil((double)n_epoch / n_samplers_);
 }

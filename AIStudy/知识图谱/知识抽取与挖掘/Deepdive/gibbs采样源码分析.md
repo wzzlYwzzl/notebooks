@@ -1278,15 +1278,13 @@ inline size_t GibbsSamplerThread::draw_sample(const Variable &variable,
 // calculate potential for each proposal given a way to iterate the domain
 #define COMPUTE_PROPOSAL(EACH_DOMAIN_VALUE, DOMAIN_VALUE, DOMAIN_INDEX)       \
   do {                                                                        \
-          for                                                                 \
-      EACH_DOMAIN_VALUE {                                                     \
+          for EACH_DOMAIN_VALUE {                                             \
         varlen_potential_buffer_[DOMAIN_INDEX] =                              \
             fg.potential(variable, DOMAIN_VALUE, assignments, weight_values); \
         sum = logadd(sum, varlen_potential_buffer_[DOMAIN_INDEX]);            \
       }                                                                       \
     double r = erand48(p_rand_seed);                                          \
-        for                                                                   \
-      EACH_DOMAIN_VALUE {                                                     \
+        for EACH_DOMAIN_VALUE {                                               \
         r -= exp(varlen_potential_buffer_[DOMAIN_INDEX] - sum);               \
         if (r <= 0) {                                                         \
           proposal = DOMAIN_VALUE;                                            \
@@ -1392,6 +1390,7 @@ void GibbsSamplerThread::sample_sgd(double stepsize) {
 inline void GibbsSamplerThread::sample_sgd_single_variable(size_t vid,
                                                            double stepsize) {
   // stochastic gradient ascent
+  //weight的梯度计算方法
   // gradient of weight = E[f|D] - E[f], where D is evidence variables,
   // f is the factor function, E[] is expectation. Expectation is calculated
   // using a sample of the variable.
@@ -1466,15 +1465,13 @@ inline size_t GibbsSamplerThread::draw_sample(const Variable &variable,
 // calculate potential for each proposal given a way to iterate the domain
 #define COMPUTE_PROPOSAL(EACH_DOMAIN_VALUE, DOMAIN_VALUE, DOMAIN_INDEX)       \
   do {                                                                        \
-          for                                                                 \
-      EACH_DOMAIN_VALUE {                                                     \
+          for EACH_DOMAIN_VALUE {                                             \
         varlen_potential_buffer_[DOMAIN_INDEX] =                              \
             fg.potential(variable, DOMAIN_VALUE, assignments, weight_values); \
         sum = logadd(sum, varlen_potential_buffer_[DOMAIN_INDEX]);            \
       }                                                                       \
     double r = erand48(p_rand_seed);                                          \
-        for                                                                   \
-      EACH_DOMAIN_VALUE {                                                     \
+        for EACH_DOMAIN_VALUE {                                               \
         r -= exp(varlen_potential_buffer_[DOMAIN_INDEX] - sum);               \
         if (r <= 0) {                                                         \
           proposal = DOMAIN_VALUE;                                            \
@@ -1578,7 +1575,6 @@ inline void FactorGraph::sgd_on_factor(size_t factor_id, double stepsize,
 ```
 
 
-#### 2.3.3 
+#### 2.3.3
 
 #### 2.3.4
-

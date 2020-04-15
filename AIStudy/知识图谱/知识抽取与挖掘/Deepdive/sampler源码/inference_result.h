@@ -29,7 +29,7 @@ class InferenceResult {
   // array of number of samples for each variable
   std::unique_ptr<size_t[]> agg_nsamples;
 
-  // vanilla / traditional Gibbs chain
+  // vanilla(普通的) / traditional Gibbs chain
   std::unique_ptr<size_t[]> assignments_free;
 
   // separate Gibbs chain CONDITIONED ON EVIDENCE

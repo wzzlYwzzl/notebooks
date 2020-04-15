@@ -134,6 +134,7 @@ inline double FactorGraph::potential(const Variable& variable, size_t proposal,
   const VariableToFactor& var_value = *(var_value_base + offset);
 
   // all adjacent factors in one chunk in factor_index
+  // 与变量向量的所有因子，权重 * 因子的概率
   for (size_t i = 0; i < var_value.factor_index_length; ++i) {
     size_t factor_id = factor_index[var_value.factor_index_base + i];
     const Factor& factor = factors[factor_id];

@@ -54,6 +54,7 @@ InferenceResult::InferenceResult(const InferenceResult &other)
   COPY_ARRAY_UNIQUE_PTR_MEMBER(sample_tallies, ntallies);
 }
 
+//合并梯度，合并方法就是梯度相加
 void InferenceResult::merge_gradients_from(const InferenceResult &other) {
   assert(nweights == other.nweights);
   for (size_t j = 0; j < nweights; ++j) {
@@ -61,10 +62,12 @@ void InferenceResult::merge_gradients_from(const InferenceResult &other) {
   }
 }
 
+//重置梯度，就是设置为0
 void InferenceResult::reset_gradients() {
   std::memset(weight_grads.get(), 0, nweights * sizeof(float));
 }
 
+//merge就是求和
 void InferenceResult::merge_weights_from(const InferenceResult &other) {
   assert(nweights == other.nweights);
   for (size_t j = 0; j < nweights; ++j) {
@@ -126,6 +129,7 @@ void InferenceResult::aggregate_marginals_from(const InferenceResult &other) {
   }
 }
 
+//展示边缘片段
 void InferenceResult::show_marginal_snippet(std::ostream &output) const {
   output << "INFERENCE SNIPPETS (QUERY VARIABLES):" << std::endl;
   size_t ct = 0;
@@ -168,6 +172,7 @@ void InferenceResult::show_marginal_snippet(std::ostream &output) const {
   output << "   ..." << std::endl;
 }
 
+//展示边缘直方图
 void InferenceResult::show_marginal_histogram(std::ostream &output,
                                               const size_t bins) const {
   // show a histogram of inference results
@@ -208,6 +213,7 @@ void InferenceResult::show_marginal_histogram(std::ostream &output,
   output << std::setprecision(prec);
 }
 
+//导出边缘概率到文本中国
 void InferenceResult::dump_marginals_in_text(std::ostream &text_output) const {
   for (size_t j = 0; j < nvars; ++j) {
     const Variable &variable = fg.variables[j];

@@ -57,7 +57,8 @@ class Factor {
    * proposal the proposed value.
    */
   inline double potential(
-      const FactorToVariable vifs[], const size_t assignments[],
+      const FactorToVariable vifs[],
+      const size_t assignments[],
       const size_t vid = Variable::INVALID_ID,
       const size_t proposal = Variable::INVALID_VALUE) const {
 #define RETURN_POTENTIAL_FOR(func_id)                                  \
