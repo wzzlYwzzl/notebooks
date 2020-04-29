@@ -77,3 +77,20 @@ dropout掉不同的隐藏神经元就类似在训练不同的网络，随机删�
 但是，如果我们直接使用训练好的网络，那么训练模型和测试模型就会出现不对等，那么得到的结果肯定是有问题的。就好比训练时的网络结构和测试时的网络结构不一致一样。
 
 为了模拟训练的做法，就以一定概率对权重进行缩放，以使最后每一层**网络的权重的期望和训练时**时一样的，更本质的原因是让每一层网络的输出的期望值一样。
+
+## 4. Dropout Pytorch实现
+
+```python
+import torch
+import torch.nn as nn
+import numpy as np
+
+def dropout(X, drop_prob):
+    X = X.float()
+    keep_prob = 1 - drop_prob
+
+    if keep_prob == 0:
+        return torch.zeros_like(X)
+    mask = (torch.rand(X.shape) < keep_prob).float()
+    return mask * X / keep_prob
+```
