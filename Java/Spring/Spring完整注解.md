@@ -393,6 +393,76 @@ definition（ConfigurationClassBeanDefinitionReader.loadBeanDefinitionsFromRegis
 
 ## @Lookup
 
+## @Mapper
+
+@Mapper和@Repository都是用在dao层上的注解，功能差不多，但是有细微的差别。
+
+**区别**：
+
+1. Mapper是Mybatis注解，和Spring没有关系，@Repository是Spring注解，用于声明一个Bean。
+
+在 Spring 程序中，Mybatis 需要找到对应的 mapper，在编译的时候动态生成代理类，实现数据库查询功能，所以我们需要在接口上添加 @Mapper 注解。
+
+```java
+@Mapper
+public interface UserDao {
+    ...
+}
+```
+
+但是，仅仅使用@Mapper注解，我们会发现，在其他变量中依赖注入，IDEA 会提示错误，但是不影响运行（亲测～）。因为我们没有显式标注这是一个 Bean，IDEA 认为运行的时候会找不到实例注入，所以提示我们错误。如下图，会有红色波浪线。
+
+尽管这个错误提示并不影响运行，但是看起来很不舒服，所以我们可以在对应的接口上添加 bean 的声明，如下：
+
+```java
+@Repository // 也可以使用@Component，效果都是一样的，只是为了声明为bean
+@Mapper
+public interface UserDao {
+    @Insert("insert into user(account, password, user_name) " +
+            "values(#{user.account}, #{user.password}, #{user.name})")
+    int insertUser(@Param("user") User user) throws RuntimeException;
+}
+```
+
+@Repository注解需要在Spring中配置扫描路径，然后生成Dao层的Bean才能被注入到Service层，其实不适用@Repository注解，只要指定扫描路径也可以的。
+
+@Repository 用于声明 dao 层的 bean，如果我们要真正地使用 @Repository 来进行开发，那是基于代码的开发，简单来说就是手写 JDBC。换句话说，@Repository起到的作用就是告诉Spring这是一个Bean，没有其他作用了，Spring不会为其生成代理类。
+
+```java
+@Repository
+public class UserDaoImpl implements UserDao{
+    @Override
+    public int insertUser(){
+        JdbcTemplate template = new JdbcTemplate();
+        ...
+    }
+}
+```
+
+```java
+@SpringBootApplication   //添加启动类注解
+@MapperScan("com.anson.dao")  //配置mapper扫描地址
+public class application
+{
+    public static void main(String[] args)
+    {
+        SpringApplication.run(application.class,args);
+    }
+}
+```
+
+@Mapper不需要配置扫描地址，指定@Mapper的接口，Mybatis就会为其创建代理类。
+
+**总结一下**：
+
+- @Mapper 一定要有，否则 Mybatis 找不到 mapper。
+- @Repository 可有可无，可以消去依赖注入的报错信息。
+- @MapperScan 可以替代 @Mapper。
+
+## @MapperScan
+
+含义参考@Mapper
+
 ## @ModelAttribute
 
 有三种地方可以使用：

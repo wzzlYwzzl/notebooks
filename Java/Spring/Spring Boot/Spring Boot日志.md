@@ -56,6 +56,11 @@ logging.level.xx.xxx.xxx = error
 **logging.path**用于指定日志的文件的路径。
 **logging.file**用于指定日志文件
 
+**注意：**
+在Spring Boot 2之后，两个配置改成了：
+logging.file.path
+logging.file.name
+
 ```txt
 logging.path = output/logs
 logging.file = my.log
