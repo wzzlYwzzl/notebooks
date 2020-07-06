@@ -52,27 +52,27 @@ Boosting算法的模型都是如下函数：$$\hat{y_i} = \sum_{k=1}^{K}f_k(x_i)
 3. 以此类推，每一步求解一个新的模型。
 
 XGBoost目标函数的变换推导过程：
->>$Obj(\theta) = \sum_{i=1}^n{l(y_i,\hat{y}_i^{t})} + \sum_{k=1}^t{\Omega(f_k)}$
+>$Obj(\theta) = \sum_{i=1}^n{l(y_i,\hat{y}_i^{t})} + \sum_{k=1}^t{\Omega(f_k)}$
 
 因为在求解第$t$个模型时，前面$t-1$个模型的复杂度就是常数了，所以：
->>$Obj=\sum_{i=1}^n{l(y_i,\hat{y}_i^{t-1} + f_t(x_i))} + \Omega(f_t) + C$
+>$Obj=\sum_{i=1}^n{l(y_i,\hat{y}_i^{t-1} + f_t(x_i))} + \Omega(f_t) + C$
 
 这里假设损失函数$l(y_i, \hat{y}_i)$是一般损失函数，且对$\hat{y}_i$有一阶导和二阶导，那么可以做泰勒二阶展开。ps. 泰勒公式如下：$f(x+\Delta x) \approx f(x) + f^{'}(x)\Delta x + \frac{1}{2}f^{''}(x)\Delta x^2$。令$f_t(x_i) = \Delta x$，目标函数变成：
->>$Obj=\sum_{i=1}^n[l(y_i,\hat{y}_i^{t-1}) + \partial_{\hat{y}^{t-1}}l(y_i,\hat{y}_i^{t-1})f_t(x_i) + {\frac{1}{2}}\partial^2_{\hat{y}^{t-1}}l(y_i,\hat{y}_i^{t-1})f_t^2(x_i)] + \gamma T + \frac{1}{2}\lambda\sum_{j=1}^T{w_j}^2 + C$
+>$Obj=\sum_{i=1}^n[l(y_i,\hat{y}_i^{t-1}) + \partial_{\hat{y}^{t-1}}l(y_i,\hat{y}_i^{t-1})f_t(x_i) + {\frac{1}{2}}\partial^2_{\hat{y}^{t-1}}l(y_i,\hat{y}_i^{t-1})f_t^2(x_i)] + \gamma T + \frac{1}{2}\lambda\sum_{j=1}^T{w_j}^2 + C$
 
 令：$g_i = \partial_{\hat{y}^{t-1}}l(y_i,\hat{y}_i^{t-1})$，$h_i = \partial^2_{\hat{y}^{t-1}}l(y_i,\hat{y}_i^{t-1})$，则上面的目标函数可以化简为：
->> $Obj=\sum_{i=1}^n[g_if_t(x_i) + {\frac{1}{2}}h_i f_t^2(x_i)] + \gamma T + \frac{1}{2}\lambda\sum_{j=1}^T{w_j}^2 + C$
+>$Obj=\sum_{i=1}^n[g_if_t(x_i) + {\frac{1}{2}}h_i f_t^2(x_i)] + \gamma T + \frac{1}{2}\lambda\sum_{j=1}^T{w_j}^2 + C$
 
 一个树模型可以表示成如下一个函数：$f_t(x) = w_{q(x)}, w \in R^T, q: R^d \rightarrow [1,...,T]$, w表示叶子节点的得分值，q(x)表示样本x对应的叶子节点，T是叶子节点的数量。现定义$I_j={i|q(x_i)=j}$，分到表示第j个叶子节点上的样本。下面可以对上面的目标函数再做如下的化简：
->>$Obj=\sum_{j=1}^T[\sum_{i \in I_j}g_iw_j + {\frac{1}{2}}\sum_{i \in I_j}h_iw_j^2] + \gamma T + \frac{1}{2}\lambda\sum_{j=1}^T{w_j}^2 + C$
->>$=\sum_{j=1}^T[\sum_{i \in I_j}g_iw_j + {\frac{1}{2}}\sum_{i \in I_j}(h_i + \lambda) w_j^2] + \gamma T + C$
+>$Obj=\sum_{j=1}^T[\sum_{i \in I_j}g_iw_j + {\frac{1}{2}}\sum_{i \in I_j}h_iw_j^2] + \gamma T + \frac{1}{2}\lambda\sum_{j=1}^T{w_j}^2 + C$
+>$=\sum_{j=1}^T[\sum_{i \in I_j}g_iw_j + {\frac{1}{2}}\sum_{i \in I_j}(h_i + \lambda) w_j^2] + \gamma T + C$
 
 令$G_j = \sum_{i \in I_j}g_i, H_j=\sum_{i \in I_j}h_i$，则目标函数可再次化简：
->>$Obj=\sum_{j=1}^T[G_jw_j + \frac{1}{2}(H_j + \lambda)w_j^2] + \gamma T + C$
+>$Obj=\sum_{j=1}^T[G_jw_j + \frac{1}{2}(H_j + \lambda)w_j^2] + \gamma T + C$
 
 上面目标函数对$w_j$求导，可以得到：
->>$w_j^* = - \frac{G_j}{H_j + \lambda}$
->>$Obj = - \frac{1}{2}\sum_{j=1}^T{\frac{G_j^2}{H_j + \lambda}} + \gamma T$
+>$w_j^* = - \frac{G_j}{H_j + \lambda}$
+>$Obj = - \frac{1}{2}\sum_{j=1}^T{\frac{G_j^2}{H_j + \lambda}} + \gamma T$
 
 经过上面的推导，我们知道了：当树的结构确定时，每个叶子节点的得分w和当前树结构下的损失大小。这为我们构建树提供了指导。我们构建新的分支时，根据Obj损失减少的最大的特征作为新的分支依据。同时我们也能知道新的分支的叶子节点上的得分w。
 
@@ -96,9 +96,11 @@ Xgboost第一感觉就是防止过拟合+各种支持分布式/并行，所以�
 ## 6. 与深度学习对比
 
 Xgboost和深度学习的关系，陈天奇在Quora上的解答如下：
-　　不同的机器学习模型适用于不同类型的任务。深度神经网络通过对时空位置建模，能够很好地捕获图像、语音、文本等高维数据。而基于树模型的XGBoost则能很好地处理表格数据，同时还拥有一些深度神经网络所没有的特性（如：模型的可解释性、输入数据的不变性、更易于调参等）。
+
+不同的机器学习模型适用于不同类型的任务。深度神经网络通过对时空位置建模，能够很好地捕获图像、语音、文本等高维数据。而基于树模型的XGBoost则能很好地处理表格数据，同时还拥有一些深度神经网络所没有的特性（如：模型的可解释性、输入数据的不变性、更易于调参等）。
 
 ## 参考地址
 
 1. [中文文档](https://xgboost.apachecn.org/#/)
 2. [Boosting家族只XGBoost](https://www.cnblogs.com/zongfa/p/9324684.html)
+3. [深入理解XGBoost](https://zhuanlan.zhihu.com/p/83901304)
