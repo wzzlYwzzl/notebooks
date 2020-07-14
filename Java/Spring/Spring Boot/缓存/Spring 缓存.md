@@ -175,3 +175,7 @@ public class EmployeeController {
     }
 }
 ```
+
+## 参考
+
+1. [A Guide To Caching in Spring](https://www.baeldung.com/spring-cache-tutorial)
