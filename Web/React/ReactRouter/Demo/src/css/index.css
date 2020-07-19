@@ -1,0 +1,10 @@
+.selected {
+    color: red;
+    background-color: #ccc;
+}
+
+.active {
+    color: red;
+    background-color: #ccc;
+    font-size: 30px;
+}
