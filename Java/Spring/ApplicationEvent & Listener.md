@@ -192,3 +192,41 @@ public class ListenerAsyncConfiguration implements AsyncConfigurer
     }
 }
 ```
+
+## 3. Spring内置事件
+
+ContextClosedEvent 、ContextRefreshedEvent 、ContextStartedEvent 、ContextStoppedEvent 、RequestHandleEvent。
+
+### 3.1 ContextRefreshedEvent
+
+在IOC的容器的启动过程，当所有的bean都已经处理完成之后，spring ioc容器会发布此事件。
+
+ContextRefreshedEvent 事件会在Spring容器初始化完成会触发该事件。我们在实际工作也可以能会监听该事件去做一些事情，但是有时候使用不当也会带来一些问题。
+
+1. 防止重复触发
+
+在web 项目中（spring mvc），系统会存在两个容器，一个是root application context ,另一个就是我们自己的 projectName-servlet context（作为root application context的子容器）。
+
+主要因为对于web应用会出现父子容器，这样就会触发两次，那么如何避免呢？
+
+下面给出一种简单的处理方法：
+
+```java
+@Component
+public class TestTask implements ApplicationListener<ContextRefreshedEvent> {
+    private volatile AtomicBoolean isInit=new AtomicBoolean(false);
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        //防止重复触发
+        if(!isInit.compareAndSet(false,true)) {
+            return;
+        }
+        start();
+    }
+
+    private void start() {
+        //开启任务
+        System.out.println("****-------------------init---------------******");
+    }
+}
+```
