@@ -2,6 +2,8 @@
 
 # Notebook说明
 
+最新的笔记在[码云](https://gitee.com/wzzlYwzzl/notebooks)上。
+
 记录平时学习的笔记，记录对知识的整理，以及自己的思考。
 
 ## 关于记录方法的建议
